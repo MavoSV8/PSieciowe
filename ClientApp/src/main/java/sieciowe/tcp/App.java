@@ -11,7 +11,7 @@ public class App {
         String ip;
         String port;
         boolean isConnected;
-        boolean isSent;
+        boolean isReceived;
 
         boolean disconnect = false;;
         Client client = new Client();
@@ -31,8 +31,9 @@ public class App {
                     client.closeSocket();
                 } else {
                     System.out.println("Sent: " + inputString.getBytes().length + " bytes");
-                    isSent = client.send(inputString);
-                    if(!isSent){
+                    client.send(inputString);
+                    isReceived = client.receive();
+                    if(!isReceived){
                         disconnect = true;
                         client.closeSocket();
 

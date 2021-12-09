@@ -31,9 +31,14 @@ public class Client {
         return true;
     }
 
-    public boolean send(String message) {
-        String received;
+    public void send(String message) {
+
         out.println(message);
+
+    }
+
+    public boolean receive(){
+        String received;
         try {
             if ((received = in.readLine()) != null) {
                 System.out.println("Received: " + received.getBytes().length + " bytes");
@@ -46,7 +51,6 @@ public class Client {
         }
         return true;
     }
-
 
     public void closeSocket() {
         try {
