@@ -8,26 +8,38 @@ public class App {
 
         Scanner scanner = new Scanner(System.in);
         String inputString;
+        String ip;
+        String port;
+        boolean isConnected;
+        boolean isSent;
+
+        boolean disconnect = false;;
         Client client = new Client();
-        boolean exit = false;
-        client.socketCreate();
-        client.connect();
 
-        while(!exit){
+        System.out.println("Hello!");
+        System.out.println("Enter IP");
+        ip = scanner.nextLine();
+        System.out.println("Enter port");
+        port = scanner.nextLine();
+        isConnected = client.connect(ip, Integer.parseInt(port));
+        if(isConnected) {
+            while (!disconnect) {
+                System.out.println("Write message to server. If you want to disconnect type 'disconnect'.");
+                inputString = scanner.nextLine();
+                if (inputString.equals("disconnect")) {
+                    disconnect = true;
+                    client.closeSocket();
+                } else {
+                    System.out.println("Sent: " + inputString.getBytes().length + " bytes");
+                    isSent = client.send(inputString);
+                    if(!isSent){
+                        disconnect = true;
+                        client.closeSocket();
 
-            inputString = scanner.next();
-            scanner.nextLine();
-            System.out.println(inputString);
-            if(inputString.equals("exit")){
-                exit = true;
+                    }
+                }
             }
-            else{
-                client.send(inputString);
-            }
-
         }
-        client.closeSocket();
-
 
     }
 }

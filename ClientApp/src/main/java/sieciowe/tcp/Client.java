@@ -6,84 +6,56 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.*;
 
+//ref: https://docs.oracle.com/javase/7/docs/api/java/net/Socket.html
+//ref: https://www.baeldung.com/a-guide-to-java-sockets
+
+
 public class Client {
 
     private Socket socket;
-    private InetAddress ipAddress;
-    private int port;
-    private InetSocketAddress inetSocketAddress;
     private PrintWriter out;
     private BufferedReader in;
-    private String received;
 
-    public void socketCreate(){
-    socket = new Socket();
 
-    }
-
-    public void connect(InetAddress address, int port){
+    public boolean connect(String ip, int port) {
         try {
-            socket.connect(inetSocketAddress = new InetSocketAddress(address, port));
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void connect(InetAddress address) {
-        ipAddress = address;
-        port = 7;
-        inetSocketAddress = new InetSocketAddress(address,port);
-        try {
-            socket.connect(inetSocketAddress);
+            socket = new Socket(ip, port);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
+            System.out.println("Cannot connect!");
+            return false;
         }
-
+        return true;
     }
 
-    public void connect(){
-        byte[] addr = {127,0,0,1};
-        port = 7;
-        try {
-            ipAddress = InetAddress.getByAddress(addr);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        inetSocketAddress = new InetSocketAddress(ipAddress,7);
-        try {
-            socket.connect(inetSocketAddress);
-            out = new PrintWriter(socket.getOutputStream());
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void send(String message){
+    public boolean send(String message) {
+        String received;
         out.println(message);
         try {
-             received = in.readLine();
-             System.out.println(received);
+            if ((received = in.readLine()) != null) {
+                System.out.println("Received: " + received.getBytes().length + " bytes");
+                System.out.println(received);
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
+            System.out.println("Cannot send message!");
+            return false;
         }
-
+        return true;
     }
 
 
-
-    public void closeSocket(){
+    public void closeSocket() {
         try {
+            in.close();
+            out.close();
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
+            System.out.println("Cannot close socket!");
         }
     }
 }
