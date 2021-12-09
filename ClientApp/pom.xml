@@ -22,6 +22,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <exec.mainClass>sieciowe.tcp.App</exec.mainClass>
     </properties>
 
 </project>
