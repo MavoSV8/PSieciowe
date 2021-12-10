@@ -56,15 +56,15 @@ public class Server {
 
 
             String inputLine = "";
-            while (true) {
-                try {
-                    if ((inputLine = in.readLine()) != null) break;
-                } catch (IOException e) {
-                    e.fillInStackTrace();
-                    System.out.println("Something wrong with message from client!");
+            try {
+                if((inputLine = in.readLine()) != null) {
+                    out.println(inputLine);
                 }
-                out.println(inputLine);
             }
+            catch (IOException e){
+
+            }
+
 
             try {
                 in.close();
@@ -74,7 +74,7 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
                 e.fillInStackTrace();
-                System.out.println("Something wrong with message from client!");
+                System.out.println("Cannot close connection with client!");
             }
 
         }
