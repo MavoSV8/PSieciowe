@@ -1,10 +1,12 @@
 package sieciowe.tcp;
 
+import java.awt.event.KeyEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class App {
+
     public static void main(String[] args) {
         InetAddress address;
         String ip;
@@ -19,14 +21,19 @@ public class App {
         try {
             address = InetAddress.getByName(ip);
             server.startServer(address, Integer.parseInt(port), 30);
-            server.clientConnect();
-            server.run();
-            server.stopServer();
-
+            while(true){
+                server.clientConnect();
+                server.run();
+            }
         } catch (Exception e) {
             e.fillInStackTrace();
             System.out.println("There is some problem with server!");
+            server.stopServer();
         }
 
     }
+
+
+
+
 }
