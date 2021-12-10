@@ -18,13 +18,15 @@ public class App {
 
         try {
             address = InetAddress.getByName(ip);
-            server.startServer(address,Integer.parseInt(port),30);
+            server.startServer(address, Integer.parseInt(port), 30);
+            server.clientConnect();
+            server.run();
+            server.stopServer();
 
         } catch (Exception e) {
             e.fillInStackTrace();
             System.out.println("There is some problem with server!");
         }
 
-        server.stopServer();
     }
 }

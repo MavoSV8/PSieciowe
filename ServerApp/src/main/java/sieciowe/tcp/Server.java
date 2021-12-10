@@ -12,13 +12,15 @@ import java.net.Socket;
 
 public class Server {
     private ServerSocket serverSocket;
+    private Socket clientSocket;
+    private PrintWriter out;
+    private BufferedReader in;
 
     public void startServer(InetAddress address, int port, int backlog) {
         try {
 
             serverSocket = new ServerSocket(port, backlog, address);
-            while (true)
-                new EchoClientHandler(serverSocket.accept()).start();
+
         } catch (IOException e) {
             e.fillInStackTrace();
             System.out.println("Cannot connect!");
@@ -26,57 +28,60 @@ public class Server {
 
     }
 
+    public void clientConnect(){
+        try {
+            clientSocket = serverSocket.accept();
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            e.fillInStackTrace();
+            System.out.println("Cannot connect client!");
+        }
+
+    }
+
+    public void run(){
+        try {
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        } catch (IOException e) {
+            e.fillInStackTrace();
+            System.out.println("Cannot create streams");
+        }
+        String inputLine;
+        try {
+            while ((inputLine = in.readLine()) != null) {
+                System.out.println(inputLine);
+                out.println(inputLine);
+            }
+        }
+        catch (IOException e){
+            e.fillInStackTrace();
+            System.out.println("Something wrong with client message");
+            try {
+                clientSocket.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        try {
+            clientSocket.close();
+            in.close();
+            out.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
     public void stopServer() {
         try {
             serverSocket.close();
         } catch (IOException e) {
             e.fillInStackTrace();
             System.out.println("Cannot close connection!");
-        }
-    }
-
-    private static class EchoClientHandler extends Thread {
-        private Socket clientSocket;
-        private PrintWriter out;
-        private BufferedReader in;
-
-        public EchoClientHandler(Socket socket) {
-            this.clientSocket = socket;
-        }
-
-        public void run() {
-            try {
-                out = new PrintWriter(clientSocket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-            } catch (IOException e) {
-                e.fillInStackTrace();
-                System.out.println("Something went wrong when creating streams!");
-            }
-
-
-            String inputLine = "";
-            try {
-                if((inputLine = in.readLine()) != null) {
-                    out.println(inputLine);
-                }
-            }
-            catch (IOException e){
-
-            }
-
-
-            try {
-                in.close();
-                out.close();
-                clientSocket.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                e.fillInStackTrace();
-                System.out.println("Cannot close connection with client!");
-            }
-
         }
     }
 }
