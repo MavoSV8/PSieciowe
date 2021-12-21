@@ -1,26 +1,37 @@
 package sieciowe.Threads;
 
 
+import javax.swing.*;
+
 public class MyThread extends Thread{
 
-    public MyThread(){
+    private JTextArea textArea;
+    private int id;
 
-        this.suspend();
+    public MyThread(JTextArea textArea, int id){
+
+        this.textArea = textArea;
+        this.id = id;
 
     }
 
 
     private void print() throws InterruptedException {
         String sb = "";
-        for (char alphabet = 'A'; alphabet <= 'Z'; alphabet++) {
+        while (true) {
+            for (char alphabet = 'A'; alphabet <= 'Z'; alphabet++) {
 
-            sb = Character.toString(alphabet) + currentThread().getId();
-            System.out.println(sb);
-            sleep(500);
+                sb = Character.toString(alphabet) + id;
+                textArea.append(sb + '\n');
+                textArea.setCaretPosition(textArea.getDocument().getLength());
+                sleep(1000);
+            }
         }
     }
 
     public void run(){
+        this.suspend();
+
         try {
             print();
         } catch (InterruptedException e) {
