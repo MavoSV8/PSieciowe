@@ -3,20 +3,27 @@ package sieciowe.Threads;
 
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static java.lang.Thread.sleep;
 
 public class App {
 
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        ArrayList<CompletableFuture<Void>> completableFutures = new ArrayList<>();
-        Executor executor = Executors.newFixedThreadPool(10);
+        ArrayList<MyTask> tasks = new ArrayList<>();
         int i;
         Gui gui = new Gui();
+
+        for(i = 0; i < 10; i++) {
+            tasks.add(new MyTask(gui.getOutputField(),i,new AtomicBoolean(false)));
+        }
+
         gui.getStartButton().addActionListener(e -> {
             int input;
             try {
                 input = Integer.parseInt(gui.getInputNumberField().getText());
-                Void result = null;
-                completableFutures.get(input).cancel(true);
+                tasks.get(input).setCheck(new AtomicBoolean(true));
+
             }
             catch(NumberFormatException | IndexOutOfBoundsException exception){
                 exception.fillInStackTrace();
@@ -29,20 +36,6 @@ public class App {
             }
 
         });
-
-        for (i = 0; i < 10; i++) {
-            completableFutures.add(new CompletableFuture<>());
-
-        }
-        int j = 0;
-        for (CompletableFuture cf : completableFutures) {
-            cf = CompletableFuture.runAsync(new MyThread(gui.getOutputField(),j));
-            j++;
-            cf.get();
-
-        }
-
-
 
 
 
