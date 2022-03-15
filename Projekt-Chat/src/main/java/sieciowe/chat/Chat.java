@@ -1,15 +1,14 @@
 package sieciowe.chat;
 
 
-import org.json.JSONObject;
+
+import com.github.cliftonlabs.json_simple.JsonObject;
+
 
 import java.io.*;
-import java.lang.reflect.Array;
+
 import java.net.*;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Timer;
 import java.util.concurrent.*;
 
 public class Chat {
@@ -24,7 +23,7 @@ public class Chat {
     private MulticastSocket socket;
     private boolean connected = false;
     private byte TTL = 1;
-    private BlockingQueue<JSON> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<JsonObject> queue = new LinkedBlockingQueue<>();
     private boolean busy = false;
     private Thread timer;
 
@@ -75,12 +74,12 @@ public class Chat {
 
             private MulticastSocket socketSender = socket;
 
-            private void sendMessage(JSON sentJSON) {
+            private void sendMessage(JsonObject sentJSON) {
                 try {
                     ByteArrayOutputStream byteStream = new ByteArrayOutputStream(65355);
                     ObjectOutputStream objectStream = new ObjectOutputStream(byteStream);
                     objectStream.writeObject(sentJSON);
-                    byte buff[] = byteStream.toByteArray();
+                    byte[] buff = byteStream.toByteArray();
                     DatagramPacket pack = new DatagramPacket(buff, buff.length, InetAddress.getByName(ip), port);
                     socketSender.send(pack, TTL);
                     objectStream.close();
@@ -93,9 +92,9 @@ public class Chat {
             @Override
             public void run() {
 
-                JSON jsonToSend = new JSON();
-                jsonToSend.setType("NICK");
-                jsonToSend.setNickname(nickname);
+                JsonObject jsonToSend = new JsonObject();
+                jsonToSend.put("type","NICK");
+                jsonToSend.put("nickname",nickname);
                 sendMessage(jsonToSend);
                 while (!connected) {
                     if (receiver.isInterrupted()) {
@@ -105,20 +104,20 @@ public class Chat {
                 }
 
                 gui.getSendButton().addActionListener(e -> {
-                    JSON json = new JSON();
+                    JsonObject json = new JsonObject();
                     LocalTime localTime = LocalTime.now();
-                    json.setType("MSG");
-                    json.setContent(gui.getMessageInput().getText());
+                    json.put("type","MSG");
+                    json.put("content",gui.getMessageInput().getText());
                     if (localTime.getHour() < 10 && localTime.getMinute() < 10) {
-                        json.setTime("0" + localTime.getHour() + ":" + "0" + localTime.getMinute());
+                        json.put("time","0" + localTime.getHour() + ":" + "0" + localTime.getMinute());
                     } else if (localTime.getHour() >= 10 && localTime.getMinute() < 10) {
-                        json.setTime(localTime.getHour() + ":" + "0" + localTime.getMinute());
+                        json.put("time",localTime.getHour() + ":" + "0" + localTime.getMinute());
                     } else if (localTime.getHour() < 10) {
-                        json.setTime("0" + localTime.getHour() + ":" + localTime.getMinute());
+                        json.put("time","0" + localTime.getHour() + ":" + localTime.getMinute());
                     } else {
-                        json.setTime(localTime.getHour() + ":" + localTime.getMinute());
+                        json.put("time",localTime.getHour() + ":" + localTime.getMinute());
                     }
-                    json.setNickname(nickname);
+                    json.put("nickname",nickname);
                     try {
                         queue.put(json);
                     } catch (InterruptedException ex) {
@@ -129,7 +128,7 @@ public class Chat {
 
                 while (true) {
                     try {
-                        JSON sentJSON = queue.take();
+                        JsonObject sentJSON = queue.take();
                         sendMessage(sentJSON);
 
                     } catch (InterruptedException e) {
@@ -155,14 +154,14 @@ public class Chat {
             private MulticastSocket socketReceiver = socket;
             private byte[] buff = new byte[65535];
 
-            private JSON receiveMessage() {
-                JSON receivedJSON = null;
+            private JsonObject receiveMessage() {
+                JsonObject receivedJSON = null;
                 try {
                     DatagramPacket packet = new DatagramPacket(buff, buff.length);
                     socketReceiver.receive(packet);
                     ByteArrayInputStream byteStream = new ByteArrayInputStream(buff);
                     ObjectInputStream inputStream = new ObjectInputStream(new BufferedInputStream(byteStream));
-                    receivedJSON = (JSON) inputStream.readObject();
+                    receivedJSON =(JsonObject) inputStream.readObject();
                     inputStream.close();
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
@@ -174,18 +173,18 @@ public class Chat {
             public void run() {
                 timer.start();
                 while (true) {
-                    JSON receivedJSON = receiveMessage();
-                    JSONObject rJSON = new JSONObject(receivedJSON);
-                    if (rJSON.getString("type").equals("NICKBUSY") && !connected) {
+                    //JSON receivedJSON = receiveMessage();
+                    JsonObject rJSON = receiveMessage();
+                    if (rJSON.get("type").equals("NICKBUSY") && !connected) {
                         busy = true;
                     }
-                    if (rJSON.getString("type").equals("MSG") && connected) {
-                        gui.getChatArea().append(rJSON.getString("time") + " " + rJSON.getString("nickname") + ": " + rJSON.getString("content") + "\n");
+                    if (rJSON.get("type").equals("MSG") && connected) {
+                        gui.getChatArea().append(rJSON.get("time") + " " + rJSON.get("nickname") + ": " + rJSON.get("content") + "\n");
                     }
-                    if (rJSON.getString("type").equals("NICK") && connected) {
-                        if (nickname.equals(rJSON.getString("nickname"))) {
-                            JSON sentJSON = new JSON();
-                            sentJSON.setType("NICKBUSY");
+                    if (rJSON.get("type").equals("NICK") && connected) {
+                        if (nickname.equals(rJSON.get("nickname"))) {
+                            JsonObject sentJSON = new JsonObject();
+                            sentJSON.put("type","NICKBUSY");
                             try {
                                 queue.put(sentJSON);
                             } catch (InterruptedException e) {
