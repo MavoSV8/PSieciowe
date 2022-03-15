@@ -3,6 +3,7 @@ package sieciowe.chat;
 
 
 import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 
 
 import java.io.*;
@@ -130,7 +131,7 @@ public class Chat {
                     try {
                         JsonObject sentJSON = queue.take();
                         sendMessage(sentJSON);
-
+                        //System.out.println(Jsoner.prettyPrint(sentJSON.toJson()));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         break;
